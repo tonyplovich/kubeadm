@@ -98,5 +98,5 @@ kubeadm:
   * kubeadm's output (join secrets)
 
 ## Troubleshooting
-* Set logging to debug on the cluster minions to see the output of kubeadm
+* Set logging to info on the cluster minions to see the output of kubeadm.
   * **note**: The messages are prefixed with 'kubeadm' but some entries span multiple lines. This means you might miss some output by grepping for kubeadm.

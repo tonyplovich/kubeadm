@@ -1,6 +1,6 @@
 # kubeadm
 This formula wraps kubeadm in order to manage k8s clusters.
-* '''note''': This formula is experimental, so use it cautiously.
+* **note**: This formula is experimental, so use it cautiously.
 * It's been tested with CentOS 7 and Ubuntu 16.04 (Xenial).
 
 ## Setup
@@ -23,7 +23,7 @@ This is a control node the formula uses to initialize the cluster, apply addon m
 salt-run -l info state.orchestrate kubeadm.orch.initialize pillar='{"cluster_name": "SOME CLUSTER HERE"}'
 ```
 ### Joining Additional Nodes
-'''Note''': This will work for both control and worker nodes.
+**Note**: This will work for both control and worker nodes.
 1. Configure the cluster settings in each new nodes' pillar.
 2. Execute a highstate on all new nodes.
 3. Run the join_nodes orchestrator from the salt master.
@@ -31,7 +31,7 @@ salt-run -l info state.orchestrate kubeadm.orch.initialize pillar='{"cluster_nam
 salt-run -l info state.orchestrate kubeadm.orch.join_nodes pillar='{"cluster_name": "SOME CLUSTER HERE"}'
 ```
 ### Upgrading a Cluster
-'''Note''': This process may change with newer versions of K8s, always check the upgrade process/ release notes before running it.
+**Note**: This process may change with newer versions of K8s, always check the upgrade process/ release notes before running it.
 1. Update the cluster_version in each nodes' pillar.
 2. Refresh each nodes' pillar.
 3. Run the upgrade orchestrator from the salt master.
@@ -48,7 +48,7 @@ salt-run -l info state.orchestrate kubeadm.orch.upgrade pillar='{"cluster_name":
 * K8s manifests can be added to all clusters by adding them to files/addons/default
 * Cluster specific manifests can be added to files/addons/CLUSTER NAME
 * Addons that require orchestration can be added as addtional sls files under addons/.  For example, [metallb](https://metallb.universe.tf/installation/) requires you to create a secret when first installing it.
-  * '''note''': these should be idempotent.
+  * **note**: these should be idempotent.
 ### Running kubectl Commands
 kubectl commands can be executed from the salt master:
 ```
@@ -99,4 +99,4 @@ kubeadm:
 
 ## Troubleshooting
 * Set logging to debug on the cluster minions to see the output of kubeadm
-  * '''note''': The messages are prefixed with 'kubeadm' but some entries span multiple lines. This means you might miss some output by grepping for kubeadm.
+  * **note**: The messages are prefixed with 'kubeadm' but some entries span multiple lines. This means you might miss some output by grepping for kubeadm.

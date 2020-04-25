@@ -1,0 +1,29 @@
+global_defs {
+   router_id LVS_DEVEL
+}
+
+vrrp_script kubeapi_check {
+  script       "/opt/keepalived/kubeapi_check.sh"
+  interval 2   
+  fall 2       
+  rise 2       
+}
+
+
+vrrp_instance VI_1 {
+    state MASTER
+    interface {{ config.interface }}
+    virtual_router_id {{ config.vrid }}
+    priority {{ config.priority }} #used in election, 101 for master & 100 for backup
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass {{ config.pass }}
+    }
+    virtual_ipaddress {
+        {{ config_vip }}
+    }
+    track_script {
+      kubeapi_check
+    }
+}

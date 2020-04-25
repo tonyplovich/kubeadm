@@ -1,0 +1,4 @@
+#!/bin/bash
+set -o pipefail
+
+/usr/bin/curl -ks https://127.0.0.1:{{ port }}/healthz | /usr/bin/grep -q 'ok'

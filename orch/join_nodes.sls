@@ -30,7 +30,7 @@ Join Control Node {{ controller}}:
 {%- if workers %}
 Join Worker Nodes:
   salt.state:
-    - tgt: {{ workers }}
+    - tgt: {{ workers |tojson }}
     - tgt_type: list
     - pillar:
         primary_controller: {{ primary_controller }}

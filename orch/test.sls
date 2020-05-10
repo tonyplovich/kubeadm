@@ -10,7 +10,7 @@ Ping Primary Controller:
 
 Ping Controllers:
   salt.function:
-    - tgt: {{ controllers }}
+    - tgt: {{ controllers |tojson }}
     - tgt_type: list
     - name: test.ping
     - require:
@@ -18,7 +18,7 @@ Ping Controllers:
 
 Ping Workers:
   salt.function:
-    - tgt: {{ workers }}
+    - tgt: {{ workers |tojson }}
     - tgt_type: list
     - name: test.ping
     - require:

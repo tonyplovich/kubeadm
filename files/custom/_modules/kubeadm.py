@@ -17,7 +17,7 @@ def reset(v="0"):
       True or False based on success
     '''
 
-    args = ["kubectl"]
+    args = ["kubeadm"]
     args.append("--v={0}".format(v))
     args.append("reset")
     args.append("--force")

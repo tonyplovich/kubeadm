@@ -5,7 +5,7 @@
 {{ kubeadm.cluster_name }}:
   kubeadm.initialized:
     - advertise_address: {{ kubeadm.advertise_address }}
-    - control_endpoint: {{ kubeadm.control_endpoint_ip }}:{{ kubeadm.control_endpoint_port }}
+#    - control_endpoint: {{ kubeadm.control_endpoint_ip }}:{{ kubeadm.control_endpoint_port }}
     - service_cidr: {{ kubeadm.service_cidr }} 
     - pod_network: {{ kubeadm.pod_network }} 
     - v: {{ kubeadm.v }}

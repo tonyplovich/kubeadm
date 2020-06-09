@@ -400,7 +400,7 @@ def create_join_info(cluster_name, v="0"):
 
 def initialize(advertise_address, 
                cert_key, 
-               control_endpoint, 
+               #control_endpoint, 
                token,
                cluster_name="k8s", 
                pod_network="172.16.0.0/16",
@@ -434,7 +434,7 @@ def initialize(advertise_address,
     args.append("--token={0}".format(token))
     args.append("--pod-network-cidr={0}".format(pod_network))
     args.append("--service-cidr={0}".format(pod_network))
-    args.append("--control-plane-endpoint={0}".format(control_endpoint))
+#    args.append("--control-plane-endpoint={0}".format(control_endpoint))
     args.append("--certificate-key={0}".format(cert_key))
     args.append("--apiserver-advertise-address={0}".format(advertise_address))
 

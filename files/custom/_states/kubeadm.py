@@ -2,7 +2,7 @@ import logging
 
 def initialized(name, 
                 advertise_address="", 
-                #control_endpoint="", 
+                control_endpoint="", 
                 service_cidr="10.96.0.0/12", 
                 pod_network="172.16.0.0/16", 
                 v="0"):
@@ -46,7 +46,7 @@ def initialized(name,
         return ret
 
     r = __salt__['kubeadm.initialize'](advertise_address=advertise_address, 
-                                       #control_endpoint=control_endpoint, 
+                                       control_endpoint=control_endpoint, 
                                        cluster_name=cluster_name,
                                        cert_key=cert_key,
                                        token=token,

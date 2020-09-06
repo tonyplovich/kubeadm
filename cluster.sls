@@ -9,8 +9,8 @@
     - service_cidr: {{ kubeadm.service_cidr }} 
     - pod_network: {{ kubeadm.pod_network }} 
     - v: {{ kubeadm.v }}
-    - retry:
-        attempts: 2
+#    - retry:
+#        attempts: 2
 
 {%- else %}
 
@@ -24,7 +24,7 @@
     - primary_controller: {{ pillar.get('primary_controller', "") }}
     - control_endpoint: {{ kubeadm.control_endpoint_ip }}:{{ kubeadm.control_endpoint_port }}
     - v: {{ kubeadm.v }}
-    - retry:
-        attempts: 2
+#    - retry:
+#        attempts: 2
 
 {%- endif %}

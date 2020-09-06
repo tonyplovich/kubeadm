@@ -1,10 +1,34 @@
-#test
 import os
 import subprocess
 import logging
 import json
+try:
+    from cryptography.fernet import Fernet
+except ImportError:
+    pass
 
 log = logging.getLogger(__name__)
+
+
+def execute_cmd(args):
+    
+    log.debug('kubeadm executing: {0}'.format(' '.join(args)))
+
+    p = subprocess.Popen(args, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+    while True:
+        output = p.stdout.readline()
+        if output == '' and p.poll() is not None:
+            break
+        if output:
+            log.info('{} output: {}'.format(args[0], output))
+            __salt__['event.send']('kubeadm/output', {'output': output})
+    r = p.returncode
+
+    if r == 0:
+        return True
+    else:
+        return False
+
 
 def reset(v="0"):
     '''
@@ -21,17 +45,8 @@ def reset(v="0"):
     args.append("--v={0}".format(v))
     args.append("reset")
     args.append("--force")
-   
-    log.info('kubeadm.reset executing: {0}'.format(' '.join(args)))
-    p = subprocess.Popen(args, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-    cmd_output = p.communicate()[0].rstrip().decode("utf-8")
-    log.info('kubeadm.reset command output: {0}'.format(cmd_output))
-    r = p.returncode
+    return execute_cmd(args) 
 
-    if r == 0:
-        return True
-    else:
-        return False
 
 def drain(node="", v="0"):
     '''
@@ -54,17 +69,8 @@ def drain(node="", v="0"):
     args.append(node)
     args.append("--ignore-daemonsets")
     args.append("--kubeconfig={0}".format("/etc/kubernetes/admin.conf"))
-   
-    log.info('kubeadm.drain executing: {0}'.format(' '.join(args)))
-    p = subprocess.Popen(args, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-    cmd_output = p.communicate()[0].rstrip().decode("utf-8")
-    log.info('kubeadm.drain command output: {0}'.format(cmd_output))
-    r = p.returncode
+    return execute_cmd(args) 
 
-    if r == 0:
-        return True
-    else:
-        return False
 
 def upgrade(version="", primary=False, v="0"):
     '''
@@ -84,17 +90,8 @@ def upgrade(version="", primary=False, v="0"):
         args.append(version)
     else:
         args.append("node")    
+    return execute_cmd(args) 
 
-    log.info('kubeadm.upgrade executing: {0}'.format(' '.join(args)))
-    p = subprocess.Popen(args, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-    cmd_output = p.communicate()[0].rstrip().decode("utf-8")
-    log.info('kubeadm.upgrade command output: {0}'.format(cmd_output))
-    r = p.returncode
-
-    if r == 0:
-        return True
-    else:
-        return False
 
 def uncordon(node="", v="0"):
     '''
@@ -116,17 +113,7 @@ def uncordon(node="", v="0"):
     args.append("uncordon")
     args.append(node)
     args.append("--kubeconfig={0}".format("/etc/kubernetes/admin.conf"))
-
-    log.info('kubeadm.uncordon executing: {0}'.format(' '.join(args)))
-    p = subprocess.Popen(args, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-    cmd_output = p.communicate()[0].rstrip().decode("utf-8")
-    log.info('kubeadm.uncordon command output: {0}'.format(cmd_output))
-    r = p.returncode
-
-    if r == 0:
-        return True
-    else:
-        return False
+    return execute_cmd(args) 
 
 
 def is_initialized():
@@ -290,7 +277,7 @@ def create_token(token, ttl="30m", v="0"):
         return False
 
 
-def upload_join_info(ca_hash, cert_key, cluster_name, token, encrypt=False):
+def upload_join_info(ca_hash, cert_key, cluster_name, token, pillar_encrypt_key="kubeadm:join_info_encrypt_key"):
     '''
     Populate Salt mine with the items needed to join a cluster
 
@@ -305,12 +292,14 @@ def upload_join_info(ca_hash, cert_key, cluster_name, token, encrypt=False):
     Returns:
       True or False based on success
     '''
-
+     
     join_info = {'ca_hash': ca_hash, 'cert_key': cert_key, 'token': token}
     allow_tgt = 'I@kubeadm:cluster_name:{0}'.format(cluster_name)
     data = json.dumps(join_info)
-    if encrypt:
-        data = __salt__["gpg.encrypt"](text=data, symmetric=True, bare=True, gnupghome='/root')
+    encrypt_key = __salt__["pillar.get"](pillar_encrypt_key, None)
+    if encrypt_key:
+        f = Fernet(encrypt_key)
+        data = f.encrypt(data)
     r = __salt__["mine.send"](cluster_name, mine_function="test.arg", join_info=data, allow_tgt=allow_tgt, allow_tgt_type='compound')
     log.debug(r)
 
@@ -319,7 +308,7 @@ def upload_join_info(ca_hash, cert_key, cluster_name, token, encrypt=False):
     else:
         return False
 
-def get_join_info(cluster_name, primary_controller, encrypt=False):
+def get_join_info(cluster_name, primary_controller, pillar_encrypt_key="kubeadm:join_info_encrypt_key"):
     '''
     Retrieve the info needed to join a cluster from Salt mine
 
@@ -334,8 +323,10 @@ def get_join_info(cluster_name, primary_controller, encrypt=False):
 
     r = __salt__["mine.get"](primary_controller, cluster_name)
     data = r[primary_controller]['kwargs']['join_info']
-    if encrypt:
-        data = __salt__["gpg.decrypt"](text=data, symmetric=True, bare=True, gnupghome='/root')
+    encrypt_key = __salt__["pillar.get"](pillar_encrypt_key, None)
+    if encrypt_key:
+        f = Fernet(encrypt_key)
+        data = f.decrypt(data)
     join_info = json.loads(data)
     log.debug('kubeadm.get_join_info: "{0}"'.format(join_info))
     
@@ -437,21 +428,7 @@ def initialize(advertise_address,
     args.append("--control-plane-endpoint={0}".format(control_endpoint))
     args.append("--certificate-key={0}".format(cert_key))
     args.append("--apiserver-advertise-address={0}".format(advertise_address))
-
-    log.debug('kubeadm.initialize: executing "{0}"'.format(' '.join(args)))
-    p = subprocess.Popen(args, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-    cmd_output = p.communicate()[0].rstrip().decode("utf-8")
-    log.info('kubeadm.initialize command output: {0}'.format(cmd_output))
-    r = p.returncode
-
-    # There seems to be a number of role bindings that don't get installed unless you allow the bootstrap-token phase
-    # https://github.com/kubernetes-sigs/kubespray/issues/4117
-    #create_token(token)
-
-    if r == 0:
-        return True
-    else:
-        return False
+    return execute_cmd(args) 
 
 
 def join(control_endpoint, 
@@ -492,14 +469,4 @@ def join(control_endpoint,
     args.append("--v={0}".format(v))
     args.append("--token={0}".format(token))
     args.append("--discovery-token-ca-cert-hash={0}".format(ca_hash))
-
-    log.debug('kubeadm.join: executing "{0}"'.format(' '.join(args)))
-    p = subprocess.Popen(args, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
-    cmd_output = p.communicate()[0].rstrip().decode("utf-8")
-    log.info('kubeadm.join command output: {0}'.format(cmd_output))
-    r = p.returncode
-
-    if r == 0:
-        return True
-    else:
-        return False
+    return execute_cmd(args) 

@@ -3,9 +3,7 @@
 include:
   - .repos
   - .versionlock
-{%- if kubeadm.encrypt_join_info %}
-  - .python-gnupg.sls
-{%- endif %}
+  - .python-cryptography
 {%- if kubeadm.control and kubeadm.keepalived %}
   - .keepalived
 {%- endif %}

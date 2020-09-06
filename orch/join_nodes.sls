@@ -16,6 +16,7 @@ Create Join Info:
 Join Control Node {{ controller}}:
   salt.state:
     - tgt: {{ controller }}
+    - timeout: 120
     - pillar:
         primary_controller: {{ primary_controller }}
     - sls:
@@ -31,6 +32,7 @@ Join Control Node {{ controller}}:
 Join Worker Nodes:
   salt.state:
     - tgt: {{ workers |tojson }}
+    - timeout: 120
     - tgt_type: list
     - pillar:
         primary_controller: {{ primary_controller }}

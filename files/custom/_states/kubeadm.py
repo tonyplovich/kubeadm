@@ -55,7 +55,7 @@ def initialized(name,
                                        v=v)
     if not r:
         # Reset the node, and get it ready for another attempt
-        __salt__['kubeadm.reset'](v=v)
+        #__salt__['kubeadm.reset'](v=v)
         ret['comment'] = 'Primary controller {0} failed to initialized the {1} cluster'.format(minion_id, cluster_name)
         ret['result'] = False
         return ret
@@ -132,7 +132,7 @@ def joined(name,
                                  v=v) 
     if not r:
         # Reset the node, and get it ready for another attempt
-        __salt__['kubeadm.reset'](v=v)
+        #__salt__['kubeadm.reset'](v=v)
         ret['result'] = False
         if control:  
           ret['comment'] = 'Controller {0} failed to join the {1} cluster'.format(minion_id, cluster_name)

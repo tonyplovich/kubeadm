@@ -1,3 +1,4 @@
+
 # kubeadm
 This formula wraps kubeadm in order to manage k8s clusters.
 * **note**: This formula is experimental, so use it cautiously.
@@ -41,7 +42,7 @@ salt-run -l info state.orchestrate kubeadm.orch.initialize pillar='{"cluster_nam
 salt-run -l info state.orchestrate kubeadm.orch.join_nodes pillar='{"cluster_name": "SOME CLUSTER HERE"}'
 ```
 ### Upgrading a Cluster
-**Note**: This process may change with newer versions of K8s, always check the upgrade process/ release notes before running it.
+**Note**: This process may change with newer versions of K8s, always check the [upgrade process](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/)/ release notes before running it.
 1. Update the cluster_version in each nodes' pillar.
 2. Refresh each nodes' pillar.
 3. Run the upgrade orchestrator from the salt master.
@@ -119,7 +120,7 @@ kubeadm:
   * kubeadm's output: --token and --certificate-key 
 
 ## Troubleshooting
-* If the reactor is configured, the master will log the output of kubeadm at "info" level.
+* If the reactor is configured, the master will log the output of kubeadm at "info" level as the command runs.
   * It can be filtered using grep:
 ```
 sudo journalctl -fu salt-master | grep 'kubeadm output - kube-poc0-ctrl0'
@@ -157,3 +158,4 @@ Sep 06 12:50:36 sm salt-master[10628]: [INFO ] kubeadm output - kube-poc0-ctrl0.
 sudo journalctl -u salt-minion --no-pager | grep 'kubeadm executing'
 Sep 06 12:54:24 kube-poc0-wkr0 salt-minion[10836]: [DEBUG   ] kubeadm executing: kubeadm join 192.168.1.10:6443 --v=5 --token=aaaaaa.bbbbbbbbbbbbbb --discovery-token-ca-cert-hash=sha256:94de1a8bb10212799f517753839280cd04b57ebfbca24e3f19e94e53f1ffbbd5
 ```
+
